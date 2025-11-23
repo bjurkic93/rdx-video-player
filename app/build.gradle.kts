@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "hr.reddiax.videoplayer"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "hr.reddiax.videoplayer"
