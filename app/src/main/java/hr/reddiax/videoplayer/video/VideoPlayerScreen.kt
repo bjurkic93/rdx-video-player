@@ -7,12 +7,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.viewinterop.AndroidView
@@ -30,6 +34,7 @@ fun VideoPlayerScreen(
 ) {
     val context = LocalContext.current
     val focusRequester = remember { FocusRequester() }
+    val playerViewState = remember { mutableStateOf<PlayerView?>(null) }
     val exoPlayer = remember {
         ExoPlayer.Builder(context).build().apply {
             val mediaItem = MediaItem.fromUri(videoUrl)
@@ -67,11 +72,38 @@ fun VideoPlayerScreen(
                         isFocusableInTouchMode = true
                         requestFocus()
                         player = exoPlayer
+                        playerViewState.value = this
                     }
                 },
                 modifier = Modifier
                     .fillMaxSize()
                     .focusRequester(focusRequester)
+                    .onKeyEvent { event ->
+                        if (event.type != KeyEventType.KeyDown) return@onKeyEvent false
+
+                        when (event.key) {
+                            Key.DirectionCenter, Key.Enter, Key.NumPadEnter, Key.Spacebar -> {
+                                playerViewState.value?.showController()
+                                if (exoPlayer.isPlaying) exoPlayer.pause() else exoPlayer.play()
+                                true
+                            }
+                            Key.DirectionLeft -> {
+                                playerViewState.value?.showController()
+                                exoPlayer.seekBack()
+                                true
+                            }
+                            Key.DirectionRight -> {
+                                playerViewState.value?.showController()
+                                exoPlayer.seekForward()
+                                true
+                            }
+                            Key.DirectionUp, Key.DirectionDown -> {
+                                playerViewState.value?.showController()
+                                true
+                            }
+                            else -> false
+                        }
+                    }
                     .focusable()
             )
         }
