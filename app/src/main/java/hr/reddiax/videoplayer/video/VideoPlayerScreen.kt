@@ -1,5 +1,7 @@
 package hr.reddiax.videoplayer.video
 
+import android.app.Activity
+import android.view.WindowManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,7 +39,13 @@ fun VideoPlayerScreen(
     }
 
     DisposableEffect(Unit) {
-        onDispose { exoPlayer.release() }
+        val window = (context as? Activity)?.window
+        window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
+        onDispose {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            exoPlayer.release()
+        }
     }
 
     Surface(
